@@ -6,6 +6,7 @@ class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model=Group
         fields=('name',)
+        # fields='__all__'
 
 class StudentRecordSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,17 +15,18 @@ class StudentRecordSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    groups=GroupSerializer(many=True)
     studentrecord=serializers.SerializerMethodField(read_only=True)
     # studentRecord=StudentRecordSerializer()
     class Meta:
         model=User
-        fields=['id','first_name','last_name','email','username','is_email_verified','phone_no','groups','studentrecord']
+        fields=['id','first_name','last_name','email','username','is_email_verified','password','phone_no','groups','studentrecord']
 
     def create(self,validated_data):
         user=User.objects.create(email=validated_data['email'],username=validated_data['username'],first_name=validated_data['first_name'],last_name=validated_data['last_name'],
         phone_no=validated_data['phone_no'])
         user.set_password(validated_data['password'])
+        group=Group.objects.get(name="student")
+        user.groups.add(group)
         user.save()
         return user
 
@@ -51,6 +53,20 @@ class StudentListSerializer(serializers.ModelSerializer):
         serializer=UserSerializer(user,many=False)
         return serializer.data
 
+
+class UserdetailSerializer(serializers.ModelSerializer):
+    groups=GroupSerializer(many=True)
+    studentrecord=serializers.SerializerMethodField(read_only=True)
+    class Meta:
+        model=User
+        fields=('id','first_name','last_name','email','username','is_email_verified','phone_no','groups','studentrecord',)
+
+    def get_studentrecord(self,obj):      
+        try:
+            record= StudentRecordSerializer(obj.studentrecord,many=False).data
+        except:
+            record=False
+        return record
 
 
     

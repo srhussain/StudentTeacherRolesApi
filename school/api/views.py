@@ -73,7 +73,7 @@ class Login(APIView):
 
 
 #POINT 1 USER SIGN UP there is a check for password and confirm password 
-#so be aware of it
+#so be aware of it and any new user Register will automatically add to student group
 class RegisterView(APIView):
 
     def post(self,request):
@@ -121,7 +121,7 @@ class Studentdetail(APIView):
         except Exception as e:
             print(e)
         return Response({
-            'message':"No Record Found"
+            'message':"Something went wrong"
         })
 
 
@@ -139,14 +139,16 @@ class AllStudentDetails(APIView):
 
                 # student=StudentRecord.objects.all()
                 
-                studentgroup=User.objects.filter(groups__name__in=['student']).values_list('pk',flat=True)
+                studentgroup=User.objects.filter(groups__name__in=['student'])
+                print(studentgroup)
+                # .values_list('pk',flat=True)
                 # print(list(studentgroup))
-                studentgroup=list(studentgroup)
+                # studentgroup=list(studentgroup)
 
 
-                student=StudentRecord.objects.filter(user__id__in=studentgroup)
+                # student=StudentRecord.objects.filter(user__id__in=studentgroup)
                 # print(student)
-                serializer=StudentListSerializer(student,many=True)
+                serializer=UserdetailSerializer(studentgroup,many=True)
                 return Response({'status':200,
                 'data':serializer.data
                 ,'message':'successfully All Data Retrieved'})
